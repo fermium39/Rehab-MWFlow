@@ -20,10 +20,15 @@ function assetImage(filename,alt){
  const src='./assets/'+encodeURIComponent(filename);
  return '<img src="'+src+'" alt="'+alt+'" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'missing-art\',textContent:\'ยังไม่พบไฟล์ภาพ: '+filename+'\'}))">';
 }
-const baseDraw=draw;
 draw=function(){
- baseDraw();
- const id=plans[day].ids[idx],code=ASSET_BY_LEGACY_ID[id],a=EXERCISE_ASSETS.find(x=>x[0]===code);
+ const p=plans[day],id=p.ids[idx],e=E[id],code=ASSET_BY_LEGACY_ID[id],a=EXERCISE_ASSETS.find(x=>x[0]===code);
+ document.getElementById('stepLabel').textContent='ท่า '+(idx+1)+' / '+p.ids.length;
+ document.getElementById('bar').style.width=(idx/p.ids.length*100)+'%';
+ document.getElementById('groupLabel').textContent=p.name;
+ document.getElementById('duration').textContent='เบา · คุมจังหวะ';
+ document.getElementById('exerciseName').textContent=e[0];
+ document.getElementById('reps').textContent=e[1];
+ document.getElementById('instructions').textContent=e[3];
  const visual=document.getElementById('exerciseVisual');
  if(a){visual.innerHTML=assetImage(a[3],a[0]+' '+a[1]);}
  else {visual.innerHTML='<div class="missing-art">ภาพประกอบสำหรับท่านี้ยังไม่มีในชุด Asset ใหม่</div>';}
