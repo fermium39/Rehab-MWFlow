@@ -121,7 +121,7 @@ const v2Render=render;
 render=function(){
  document.getElementById('phaseSelect').value=String(phase);
  const p=plans[day];
- document.getElementById('date').textContent=new Intl.DateTimeFormat('th-TH',{dateStyle:'full'}).format(new Date());
+ document.getElementById('date').textContent=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric'}).format(new Date());
  document.getElementById('todayTitle').textContent=p.name;
  document.getElementById('todayDesc').textContent=p.desc;
  document.getElementById('todayCount').textContent=p.ids.length?p.ids.length+' ขั้นตอน':'วันพัก';
@@ -149,4 +149,30 @@ function clearHistory(){
  localStorage.removeItem('rehabLogs');for(let i=1;i<=4;i++)localStorage.removeItem('rehabCompletedPhase'+i);render();renderLogs();
 }
 
+</script><script>
+const EQUIPMENT={
+ mat:{name:'เสื่อออกกำลังกาย',weight:'ไม่มีน้ำหนัก',shape:'<rect x="9" y="22" width="82" height="35" rx="7"/><path d="M15 22c12 10 12 25 0 35M26 22c12 10 12 25 0 35"/>'},
+ band:{name:'ยางยืดออกกำลังกาย',weight:'แรงต้านเบา (Light) · ไม่กำหนดกิโลกรัม',shape:'<path d="M18 39c0-28 64-28 64 0s-64 28-64 0Z"/><path d="M30 38c0-14 40-14 40 0"/>'},
+ dumbbell:{name:'ดัมเบล',weight:'1 กก./ข้าง เริ่มต้น · ปรับตามความสบาย',shape:'<path d="M12 24v33m9-40v47m58-47v47m9-40v33M21 40h58"/>'},
+ chair:{name:'เก้าอี้มั่นคง',weight:'ไม่ใช้อุปกรณ์ถ่วงน้ำหนัก',shape:'<path d="M20 12v39h60V28M20 51v28m60-28v28M20 45h60"/>'},
+ wall:{name:'ผนังเรียบ',weight:'ใช้น้ำหนักตัว ไม่เพิ่มแรงต้าน',shape:'<rect x="20" y="10" width="60" height="70"/><path d="M20 30h60M20 50h60M20 70h60M50 10v20M35 30v20M65 30v20M50 50v20"/>'},
+ shoes:{name:'รองเท้าสำหรับเดิน',weight:'ไม่มีน้ำหนักเพิ่ม',shape:'<path d="M12 53c15 0 25-6 30-19 10 10 24 16 46 18v13H12Z"/><path d="M45 44l-8 8m19-3-8 8"/>'}
+};
+const EQUIPMENT_BY_EXERCISE={row:['band','chair'],curl:['dumbbell','chair'],scap:['band','chair'],wallslide:['wall'],wall:['wall'],march:['chair'],anklecircle:['chair'],kneerange:['chair'],kneeext:['chair'],heelraise:['chair'],rotate:['chair'],chin:['chair'],deadbug:['mat'],brace:['mat'],glute:['mat'],clam:['mat'],hipabd:['mat'],quad:['mat'],breathing:['mat'],walk:['shoes']};
+function closeDialog(id){document.getElementById(id).close()}
+function equipmentIcon(key){return '<svg viewBox="0 0 100 90" role="img" aria-label="'+EQUIPMENT[key].name+'">'+EQUIPMENT[key].shape+'</svg>'}
+function showEquipmentDialog(){
+ const keys=[...new Set(plans[day].ids.flatMap(item=>EQUIPMENT_BY_EXERCISE[item.id]||[]))];
+ document.getElementById('equipmentList').innerHTML=keys.length?keys.map(key=>'<div class="equipment-item"><div class="equipment-pic">'+equipmentIcon(key)+'</div><strong>'+EQUIPMENT[key].name+'</strong><small>'+EQUIPMENT[key].weight+'</small></div>').join(''):'<p>วันนี้ไม่ต้องใช้อุปกรณ์เพิ่มเติม</p>';
+ document.getElementById('equipmentDialog').showModal();
+}
+function beginWorkout(){closeDialog('equipmentDialog');v2Start()}
+function openExercisePreview(id){
+ const e=E[id],code=ASSET_BY_LEGACY_ID[id],a=EXERCISE_ASSETS.find(x=>x[0]===code);
+ document.getElementById('exampleTitle').textContent=e[0];
+ document.getElementById('exampleVisual').innerHTML=a?assetImage(a[3],a[0]+' '+a[1]):'<div class="missing-art">ยังไม่มีภาพตัวอย่างสำหรับท่านี้</div>';
+ document.getElementById('exampleReps').textContent=e[1];
+ document.getElementById('exampleInstructions').textContent=e[3];
+ document.getElementById('exerciseDialog').showModal();
+}
 </script></body></html>
