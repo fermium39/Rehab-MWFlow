@@ -1,4 +1,4 @@
-const CACHE='rehab-mw-flow-2026.11.04.3';
+const CACHE='rehab-mw-flow-2026.11.04.4';
 const SHELL=['./','./index.html','./manifest.webmanifest','./Rehab_MWFlow_App_Icons/icon-192.png','./Rehab_MWFlow_App_Icons/icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('rehab-mw-flow-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
