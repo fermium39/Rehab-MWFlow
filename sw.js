@@ -1,14 +1,54 @@
-const CACHE='rehab-mw-flow-fitflow-2026.11.04.29';
-const SHELL=['./','./index.html','./manifest.webmanifest','./assets/Logo/FitFlow-Logo.png','./assets/Logo/FitFlow-Logo_icon.png'];
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('rehab-mw-flow-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
-self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting()});
+const CACHE='rehab-mw-flow-fitflow-2026.11.04.30';
+const OFFLINE='./index.html';
+self.addEventListener('install',event=>{
+ event.waitUntil(caches.open(CACHE).then(()=>self.skipWaiting()));
+});
+self.addEventListener('activate',event=>{
+ event.waitUntil((async()=>{
+  const keys=await caches.keys();
+  await Promise.all(keys.filter(key=>key.startsWith('rehab-mw-flow-')&&key!==CACHE).map(key=>caches.delete(key)));
+  await self.clients.claim();
+ })());
+});
+self.addEventListener('message',event=>{
+ if(event.data?.type==='SKIP_WAITING')self.skipWaiting();
+});
 self.addEventListener('fetch',event=>{
- const req=event.request,url=new URL(req.url);
- if(req.method!=='GET'||url.origin!==self.location.origin)return;
- if(req.mode==='navigate'||url.pathname.endsWith('/index.html')){
-  event.respondWith(fetch(req,{cache:'no-store'}).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put('./index.html',copy))}return response}).catch(()=>caches.match('./index.html')));
+ const request=event.request;
+ if(request.method!=='GET')return;
+ const url=new URL(request.url);
+ if(url.origin!==self.location.origin)return;
+ if(request.mode==='navigate'||url.pathname.endsWith('/index.html')){
+  event.respondWith((async()=>{
+   try{
+    // Always ask the server for HTML; cache is an offline fallback only.
+    const response=await fetch(request,{cache:'no-store'});
+    if(response.ok){
+     const copy=response.clone();
+     event.waitUntil(caches.open(CACHE).then(cache=>cache.put(OFFLINE,copy)));
+    }
+    return response;
+   }catch(err){
+    const cached=await caches.match(OFFLINE);
+    if(cached)return cached;
+    throw err;
+   }
+  })());
   return;
  }
- event.respondWith(caches.match(req).then(cached=>cached||fetch(req).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(req,copy))}return response})));
+ // Assets are network-first, then offline fallback, so new images are not stuck.
+ event.respondWith((async()=>{
+  try{
+   const response=await fetch(request);
+   if(response.ok){
+    const copy=response.clone();
+    event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));
+   }
+   return response;
+  }catch(err){
+   const cached=await caches.match(request);
+   if(cached)return cached;
+   throw err;
+  }
+ })());
 });
