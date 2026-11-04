@@ -1,4 +1,4 @@
-const CACHE='rehab-mw-flow-fitflow-2026.11.04.31';
+const CACHE='rehab-mw-flow-fitflow-2026.11.04.32';
 const OFFLINE='./index.html';
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(()=>self.skipWaiting()));
