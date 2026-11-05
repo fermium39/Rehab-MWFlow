@@ -8,4 +8,4 @@ Run GitHub Actions workflow **Build FitFlow Go APK** and download the `fitflow-g
 
 To build locally: from this directory, run `gradle :app:assembleDebug` with JDK 17, Android SDK 35, and Gradle 8.9. Before building, populate `app/src/main/assets/` with the website's `index.html` and `assets/` directory, and apply the transformations in the workflow.
 
-The debug APK is for personal testing. For durable upgrades, configure a private release signing key and preserve it between releases. Web and Android localStorage do not synchronize. Test on the device in airplane mode before relying on it.
+The debug APK is for personal testing. GitHub-hosted runners do not preserve their temporary debug signing keys; subsequent debug builds may require uninstalling the old APK, which deletes app data. Export history first. For durable upgrades, configure a private release signing key and preserve it between releases. Web and Android localStorage do not synchronize. Test on the device in airplane mode before relying on it.

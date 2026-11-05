@@ -8,7 +8,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
@@ -17,7 +16,6 @@ import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends Activity {
     private static final String APP_URL = "https://appassets.androidplatform.net/assets/index.html";
@@ -84,13 +82,11 @@ public class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else if (webView != null) {
-            webView.evaluateJavascript(
-                "(function(){if(window.fitFlowGoBack){window.fitFlowGoBack();return true}return false})()",
-                result -> { if (!"true".equals(result)) super.onBackPressed(); }
-            );
-        } else super.onBackPressed();
+        if (webView == null) { super.onBackPressed(); return; }
+        webView.evaluateJavascript(
+            "(function(){return window.fitFlowGoBack ? window.fitFlowGoBack() : false})()",
+            value -> { if (!"true".equals(value)) finish(); }
+        );
     }
 
     @Override public void onDestroy() {
