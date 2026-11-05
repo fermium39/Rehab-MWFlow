@@ -107,11 +107,11 @@ shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-base.png', resource_dir / 'fitf
 mipmap = root / 'fitflow-go/app/src/main/res/mipmap-anydpi-v26'
 mipmap.mkdir(parents=True, exist_ok=True)
 (mipmap / 'fitflow_go_icon.xml').write_text(
-    '<?xml version="1.0" encoding="utf-8"?>\\n'
-    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\\n'
-    '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\\n'
-    '  <foreground android:drawable="@drawable/fitflow_go_icon_foreground"/>\\n'
-    '</adaptive-icon>\\n',
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
+    '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\n'
+    '  <foreground android:drawable="@drawable/fitflow_go_icon_foreground"/>\n'
+    '</adaptive-icon>\n',
     encoding='utf-8',
 )
 # Legacy fallback for pre-adaptive launcher handling.
