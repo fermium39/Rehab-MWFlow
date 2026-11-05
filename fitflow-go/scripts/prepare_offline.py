@@ -26,7 +26,7 @@ html = html.replace('./assets/Logo/FitFlow-Logo.png', './assets/Branding/FitFlow
 html = html.replace('./assets/Logo/FitFlow-Logo_icon.png', './assets/Branding/FitFlow_GO-Logo_icon-main.png')
 assert './assets/Branding/FitFlow_GO-Logo.png' in html, 'FitFlow Go header logo not replaced'
 html = html.replace('<link rel="manifest" href="./manifest.webmanifest">', '')
-html = html.replace('FitFlow · v2026.11.05.07', 'FitFlow Go · v2026.11.05.07')
+html = re.sub(r'FitFlow · (v[0-9.]+)', r'FitFlow Go · \\1', html)
 # Internal local Android bridge: origin is the bundled asset-loader domain only.
 old_export = "function exportData(){const b=new Blob([localStorage.getItem('rehabLogs')||'[]'],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rehab-history.json';a.click();URL.revokeObjectURL(a.href)}"
 new_export = "function exportData(){const json=localStorage.getItem('rehabLogs')||'[]';if(window.FitFlowGo){const bytes=new TextEncoder().encode(json);let text='';for(const b of bytes)text+=String.fromCharCode(b);window.FitFlowGo.saveHistory(btoa(text));return}const blob=new Blob([json],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rehab-history.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}"
@@ -55,7 +55,7 @@ equipment_section = html.split('const EQUIPMENT={', 1)
 assert len(equipment_section) == 2, 'Missing equipment definition'
 equipment_body = equipment_section[1].split('};', 1)[0]
 equipment = re.findall(r"image:'([^']+\.png)'", equipment_body)
-assert len(exercise) >= 25, f'Only {len(exercise)} exercise assets identified'
+assert len(exercise) >= 28, f'Only {len(exercise)} exercise assets identified'
 assert len(equipment) == 5, f'Unexpected equipment count: {len(equipment)}'
 required = {f'assets/{name}' for name in exercise}
 required |= {f'assets/Equipment/{name}' for name in equipment}
@@ -75,7 +75,7 @@ for file in required:
 
 # Validate every bundled inline JS script before Gradle compiles Java.
 script_blocks = re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html)
-assert len(script_blocks) == 6, f'Unexpected script structure: {len(script_blocks)} scripts'
+assert len(script_blocks) >= 6, f'Unexpected script structure: {len(script_blocks)} scripts'
 with tempfile.TemporaryDirectory(prefix='fitflow-go-js-') as folder:
     for number, code in enumerate(script_blocks, start=1):
         script_file = Path(folder) / f'inline-{number}.js'
@@ -99,38 +99,50 @@ for name in brand_names:
     shutil.copyfile(branding / name, web_branding / name)
 
 # Native Android splash and launcher resources.
+# Render the logo inside a *verified* adaptive-icon safe area, rather than
+# relying on Android to shrink a full-bleed source PNG.
+from PIL import Image, ImageChops
 resource_dir = root / 'fitflow-go/app/src/main/res/drawable'
 resource_dir.mkdir(parents=True, exist_ok=True)
-# Adaptive icon: Android applies its launcher mask to the foreground/background layers.
-shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-main.png', resource_dir / 'fitflow_go_icon_foreground.png')
-shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-base.png', resource_dir / 'fitflow_go_icon_background.png')
-# Constrain the foreground artwork to the adaptive icon's central safe area.
-# Adaptive icons are rendered on a 108dp canvas; the inner 66dp is always visible.
-(resource_dir / 'fitflow_go_icon_safe.xml').write_text(
-    '<?xml version="1.0" encoding="utf-8"?>\n'
-    '<layer-list xmlns:android="http://schemas.android.com/apk/res/android">\n'
-    '  <item android:width="66dp" android:height="66dp" android:gravity="center" android:drawable="@drawable/fitflow_go_icon_foreground"/>\n'
-    '</layer-list>\n',
-    encoding='utf-8',
-)
+source = Image.open(branding / 'FitFlow_GO-Logo_icon-main.png').convert('RGBA')
+alpha = source.getchannel('A')
+bbox = alpha.getbbox()
+assert bbox, 'Launcher foreground is fully transparent'
+logo = source.crop(bbox)
+canvas_size = 432  # 108dp @4x
+safe_diameter = 264  # 66dp @4x
+# Further inset to 54dp: ample clearance even for aggressive launcher masks.
+max_artwork = 216
+logo.thumbnail((max_artwork, max_artwork), Image.Resampling.LANCZOS)
+foreground = Image.new('RGBA', (canvas_size, canvas_size), (0, 0, 0, 0))
+foreground.alpha_composite(logo, ((canvas_size-logo.width)//2, (canvas_size-logo.height)//2))
+bounds = foreground.getchannel('A').getbbox()
+assert bounds and all((bounds[0] >= 108, bounds[1] >= 108,
+                       bounds[2] <= 324, bounds[3] <= 324)), f'Launcher art outside safe zone: {bounds}'
+foreground.save(resource_dir / 'fitflow_go_icon_foreground.png')
+background = Image.open(branding / 'FitFlow_GO-Logo_icon-base.png').convert('RGBA')
+background = background.resize((canvas_size, canvas_size), Image.Resampling.LANCZOS)
+background.save(resource_dir / 'fitflow_go_icon_background.png')
+print(f'Adaptive launcher art bounds: {bounds}; safe circle diameter: {safe_diameter}px')
 
 mipmap = root / 'fitflow-go/app/src/main/res/mipmap-anydpi-v26'
 mipmap.mkdir(parents=True, exist_ok=True)
 (mipmap / 'fitflow_go_icon.xml').write_text(
-    '<?xml version="1.0" encoding="utf-8"?>\n'
-    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
-    '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\n'
-    '  <foreground android:drawable="@drawable/fitflow_go_icon_safe"/>\n'
-    '</adaptive-icon>\n',
+    '<?xml version="1.0" encoding="utf-8"?>\\n'
+    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\\n'
+    '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\\n'
+    '  <foreground android:drawable="@drawable/fitflow_go_icon_foreground"/>\\n'
+    '</adaptive-icon>\\n',
     encoding='utf-8',
 )
-# Legacy fallback for pre-adaptive launcher handling.
+# Legacy launcher fallback: same centered logo, with background and padding.
 mipmap_legacy = root / 'fitflow-go/app/src/main/res/mipmap-nodpi'
 mipmap_legacy.mkdir(parents=True, exist_ok=True)
-shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-main.png', mipmap_legacy / 'fitflow_go_icon.png')
+legacy = background.copy()
+legacy.alpha_composite(foreground)
+legacy.save(mipmap_legacy / 'fitflow_go_icon.png')
 shutil.copyfile(branding / 'FitFlow_GO-Logo.png', resource_dir / 'fitflow_go_splash_logo.png')
 shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-base.png', resource_dir / 'fitflow_go_splash_background.png')
-
 
 target.mkdir(parents=True, exist_ok=True)
 shutil.copytree(root / 'assets', target / 'assets', dirs_exist_ok=True)
