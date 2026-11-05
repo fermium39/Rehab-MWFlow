@@ -101,7 +101,23 @@ for name in brand_names:
 # Native Android splash and launcher resources.
 resource_dir = root / 'fitflow-go/app/src/main/res/drawable'
 resource_dir.mkdir(parents=True, exist_ok=True)
-shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-main.png', resource_dir / 'fitflow_go_icon.png')
+# Adaptive icon: Android applies its launcher mask to the foreground/background layers.
+shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-main.png', resource_dir / 'fitflow_go_icon_foreground.png')
+shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-base.png', resource_dir / 'fitflow_go_icon_background.png')
+mipmap = root / 'fitflow-go/app/src/main/res/mipmap-anydpi-v26'
+mipmap.mkdir(parents=True, exist_ok=True)
+(mipmap / 'fitflow_go_icon.xml').write_text(
+    '<?xml version="1.0" encoding="utf-8"?>\\n'
+    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\\n'
+    '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\\n'
+    '  <foreground android:drawable="@drawable/fitflow_go_icon_foreground"/>\\n'
+    '</adaptive-icon>\\n',
+    encoding='utf-8',
+)
+# Legacy fallback for pre-adaptive launcher handling.
+mipmap_legacy = root / 'fitflow-go/app/src/main/res/mipmap-nodpi'
+mipmap_legacy.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-main.png', mipmap_legacy / 'fitflow_go_icon.png')
 shutil.copyfile(branding / 'FitFlow_GO-Logo.png', resource_dir / 'fitflow_go_splash_logo.png')
 shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-base.png', resource_dir / 'fitflow_go_splash_background.png')
 
