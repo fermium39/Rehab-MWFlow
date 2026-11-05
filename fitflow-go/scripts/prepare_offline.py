@@ -104,6 +104,16 @@ resource_dir.mkdir(parents=True, exist_ok=True)
 # Adaptive icon: Android applies its launcher mask to the foreground/background layers.
 shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-main.png', resource_dir / 'fitflow_go_icon_foreground.png')
 shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-base.png', resource_dir / 'fitflow_go_icon_background.png')
+# Constrain the foreground artwork to the adaptive icon's central safe area.
+# Adaptive icons are rendered on a 108dp canvas; the inner 66dp is always visible.
+(resource_dir / 'fitflow_go_icon_safe.xml').write_text(
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    '<layer-list xmlns:android="http://schemas.android.com/apk/res/android">\n'
+    '  <item android:width="66dp" android:height="66dp" android:gravity="center" android:drawable="@drawable/fitflow_go_icon_foreground"/>\n'
+    '</layer-list>\n',
+    encoding='utf-8',
+)
+
 mipmap = root / 'fitflow-go/app/src/main/res/mipmap-anydpi-v26'
 mipmap.mkdir(parents=True, exist_ok=True)
 (mipmap / 'fitflow_go_icon.xml').write_text(
