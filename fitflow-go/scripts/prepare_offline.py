@@ -92,7 +92,7 @@ brand_names = [
 for name in brand_names:
     file = branding / name
     assert file.is_file(), f'Missing brand asset: {file}'
-    assert file.read_bytes()[:8] == b'\\x89PNG\\r\\n\\x1a\\n', f'Invalid brand PNG: {file}'
+    assert file.read_bytes()[:8] == bytes([137,80,78,71,13,10,26,10]), f'Invalid brand PNG: {file}'
 web_branding = target / 'assets/Branding'
 web_branding.mkdir(parents=True, exist_ok=True)
 for name in brand_names:
