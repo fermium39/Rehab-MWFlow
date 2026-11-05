@@ -128,13 +128,16 @@ print(f'Adaptive launcher art bounds: {bounds}; safe circle diameter: {safe_diam
 mipmap = root / 'fitflow-go/app/src/main/res/mipmap-anydpi-v26'
 mipmap.mkdir(parents=True, exist_ok=True)
 (mipmap / 'fitflow_go_icon.xml').write_text(
-    '<?xml version="1.0" encoding="utf-8"?>\\n'
-    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\\n'
-    '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\\n'
-    '  <foreground android:drawable="@drawable/fitflow_go_icon_foreground"/>\\n'
-    '</adaptive-icon>\\n',
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
+    '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\n'
+    '  <foreground android:drawable="@drawable/fitflow_go_icon_foreground"/>\n'
+    '</adaptive-icon>\n',
     encoding='utf-8',
 )
+# Validate XML serialization before packaging Android resources.
+import xml.etree.ElementTree as ET
+ET.parse(mipmap / 'fitflow_go_icon.xml')
 # Legacy launcher fallback: same centered logo, with background and padding.
 mipmap_legacy = root / 'fitflow-go/app/src/main/res/mipmap-nodpi'
 mipmap_legacy.mkdir(parents=True, exist_ok=True)
