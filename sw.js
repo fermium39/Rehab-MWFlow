@@ -1,4 +1,4 @@
-const CACHE='rehab-mw-flow-fitflow-2026.11.05.01';
+const CACHE='rehab-mw-flow-fitflow-2026.11.05.02';
 const OFFLINE='./index.html';
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(()=>self.skipWaiting()));
@@ -36,7 +36,19 @@ self.addEventListener('fetch',event=>{
   })());
   return;
  }
- // Assets are network-first, then offline fallback, so new images are not stuck.
+ // Versioned cache-first for images; updated compressed files are fetched once per release.
+ if(url.pathname.match(/\\.(?:png|jpe?g|webp|gif|avif|svg)$/i)){
+  event.respondWith((async()=>{
+   const cache=await caches.open(CACHE);
+   const cached=await cache.match(request);
+   if(cached)return cached;
+   const response=await fetch(request);
+   if(response.ok)event.waitUntil(cache.put(request,response.clone()));
+   return response;
+  })());
+  return;
+ }
+ // Other assets retain network-first behavior.
  event.respondWith((async()=>{
   try{
    const response=await fetch(request);
