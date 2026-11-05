@@ -1,4 +1,4 @@
-const CACHE='rehab-mw-flow-fitflow-2026.11.05.02';
+const CACHE='rehab-mw-flow-fitflow-2026.11.05.03';
 const OFFLINE='./index.html';
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(()=>self.skipWaiting()));
@@ -37,7 +37,7 @@ self.addEventListener('fetch',event=>{
   return;
  }
  // Versioned cache-first for images; updated compressed files are fetched once per release.
- if(url.pathname.match(/\\.(?:png|jpe?g|webp|gif|avif|svg)$/i)){
+ if(url.pathname.match(/\.(?:png|jpe?g|webp|gif|avif|svg)$/i)){
   event.respondWith((async()=>{
    const cache=await caches.open(CACHE);
    const cached=await cache.match(request);
