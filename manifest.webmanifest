@@ -11,12 +11,12 @@
   "lang": "th",
   "icons": [
     {
-      "src": "assets/Logo/FitFlow_Icon_Rounded_512.png",
+      "src": "assets/Logo/FitFlow_Icon_Rounded_512.png?v=20261105-2",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/Logo/FitFlow_Icon_Rounded_512.png",
+      "src": "assets/Logo/FitFlow_Icon_Rounded_512.png?v=20261105-2",
       "type": "image/png",
       "purpose": "maskable"
     }
