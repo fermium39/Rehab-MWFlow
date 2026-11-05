@@ -21,6 +21,10 @@ html, count = re.subn(r'<button id="checkUpdate"[^>]*>[\s\S]*?</button>', '', ht
 assert count == 1, f'Unexpected web update button count: {count}'
 
 html = html.replace('<title>FitFlow</title>', '<title>FitFlow Go</title>')
+# Replace branding only in the bundled Android app, never in the web version.
+html = html.replace('./assets/Logo/FitFlow-Logo.png', './assets/Branding/FitFlow_GO-Logo.png')
+html = html.replace('./assets/Logo/FitFlow-Logo_icon.png', './assets/Branding/FitFlow_GO-Logo_icon-main.png')
+assert './assets/Branding/FitFlow_GO-Logo.png' in html, 'FitFlow Go header logo not replaced'
 html = html.replace('<link rel="manifest" href="./manifest.webmanifest">', '')
 html = html.replace('FitFlow · v2026.11.05.07', 'FitFlow Go · v2026.11.05.07')
 # Internal local Android bridge: origin is the bundled asset-loader domain only.
@@ -78,10 +82,28 @@ with tempfile.TemporaryDirectory(prefix='fitflow-go-js-') as folder:
         script_file.write_text(code, encoding='utf-8')
         subprocess.run(['node', '--check', str(script_file)], check=True)
 
-# Android launcher icon uses the same graphic as the web app.
+# Copy new FitFlow Go branding into the offline web bundle and native resources.
+branding = root / 'fitflow-go/branding'
+brand_names = [
+    'FitFlow_GO-Logo.png',
+    'FitFlow_GO-Logo_icon-main.png',
+    'FitFlow_GO-Logo_icon-base.png',
+]
+for name in brand_names:
+    file = branding / name
+    assert file.is_file(), f'Missing brand asset: {file}'
+    assert file.read_bytes()[:8] == b'\\x89PNG\\r\\n\\x1a\\n', f'Invalid brand PNG: {file}'
+web_branding = target / 'assets/Branding'
+web_branding.mkdir(parents=True, exist_ok=True)
+for name in brand_names:
+    shutil.copyfile(branding / name, web_branding / name)
+
+# Native Android splash and launcher resources.
 resource_dir = root / 'fitflow-go/app/src/main/res/drawable'
 resource_dir.mkdir(parents=True, exist_ok=True)
-shutil.copyfile(root / 'assets/Logo/FitFlow-Logo_icon.png', resource_dir / 'fitflow_go_icon.png')
+shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-main.png', resource_dir / 'fitflow_go_icon.png')
+shutil.copyfile(branding / 'FitFlow_GO-Logo.png', resource_dir / 'fitflow_go_splash_logo.png')
+shutil.copyfile(branding / 'FitFlow_GO-Logo_icon-base.png', resource_dir / 'fitflow_go_splash_background.png')
 
 
 target.mkdir(parents=True, exist_ok=True)
