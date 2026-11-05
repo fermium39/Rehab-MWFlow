@@ -69,9 +69,9 @@ assert len(set(exercise)) == len(exercise), 'Duplicate exercise image entries'
 for file in required:
     assert (root / file).read_bytes()[:8] == b'\x89PNG\r\n\x1a\n', f'Invalid PNG: {file}'
 
-# Validate all eight inline JS scripts before Gradle compiles Java.
+# Validate every bundled inline JS script before Gradle compiles Java.
 script_blocks = re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html)
-assert len(script_blocks) >= 7, 'Unexpected script structure'
+assert len(script_blocks) == 6, f'Unexpected script structure: {len(script_blocks)} scripts'
 with tempfile.TemporaryDirectory(prefix='fitflow-go-js-') as folder:
     for number, code in enumerate(script_blocks, start=1):
         script_file = Path(folder) / f'inline-{number}.js'
