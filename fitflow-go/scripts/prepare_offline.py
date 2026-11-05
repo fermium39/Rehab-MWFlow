@@ -120,7 +120,7 @@ mipmap.mkdir(parents=True, exist_ok=True)
     '<?xml version="1.0" encoding="utf-8"?>\n'
     '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
     '  <background android:drawable="@drawable/fitflow_go_icon_background"/>\n'
-    '  <foreground android:drawable="@drawable/fitflow_go_icon_foreground"/>\n'
+    '  <foreground android:drawable="@drawable/fitflow_go_icon_safe"/>\n'
     '</adaptive-icon>\n',
     encoding='utf-8',
 )
