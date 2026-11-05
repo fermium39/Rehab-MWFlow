@@ -22,6 +22,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Install image validation dependency
+        run: python3 -m pip install Pillow==11.3.0
       - name: Validate and bundle offline website
         run: python3 fitflow-go/scripts/prepare_offline.py
       - name: Build debug APK
@@ -39,6 +41,9 @@ jobs:
                   'assets/assets/Logo/FitFlow-Logo.png',
                   'assets/assets/Equipment/Equipment_Kettlebell.png',
                   'assets/assets/S9-DeadBug.png',
+                  'assets/assets/S14-SitToStand.png',
+                  'assets/assets/S15-LowStepUp.png',
+                  'assets/assets/M9-StandingWeightShift.png',
               ]
               missing=[p for p in mandatory if p not in paths]
               assert not missing, f"Missing bundled assets: {missing}"
