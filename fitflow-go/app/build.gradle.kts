@@ -6,8 +6,8 @@ android {
         applicationId = "com.fitflow.go"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "2026.11.06.02"
+        versionCode = 4
+        versionName = "2026.11.06.03"
     }
     buildTypes { getByName("release") { isMinifyEnabled = false } }
     compileOptions {
