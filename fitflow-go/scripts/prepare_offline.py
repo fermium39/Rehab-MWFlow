@@ -26,7 +26,10 @@ html = html.replace('./assets/Logo/FitFlow-Logo.png', './assets/Branding/FitFlow
 html = html.replace('./assets/Logo/FitFlow-Logo_icon.png', './assets/Branding/FitFlow_GO-Logo_icon-main.png')
 assert './assets/Branding/FitFlow_GO-Logo.png' in html, 'FitFlow Go header logo not replaced'
 html = html.replace('<link rel="manifest" href="./manifest.webmanifest">', '')
-html = re.sub(r'FitFlow · (v[0-9.]+)', r'FitFlow Go · \\1', html)
+html = re.sub(r'FitFlow · (v[0-9.]+)', r'FitFlow Go · \1', html)
+assert re.search(r'id="homeVersion">FitFlow Go · v[0-9.]+', html), 'FitFlow Go version label missing or malformed'
+assert 'class="start-full" onclick="start()">เริ่มฝึกวันนี้</button>' in html, 'Updated start button missing from Android bundle'
+assert '.start-full{width:100%;font-size:20px}' in html, 'Updated start button font missing from Android bundle'
 # Internal local Android bridge: origin is the bundled asset-loader domain only.
 old_export = "function exportData(){const b=new Blob([localStorage.getItem('rehabLogs')||'[]'],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rehab-history.json';a.click();URL.revokeObjectURL(a.href)}"
 new_export = "function exportData(){const json=localStorage.getItem('rehabLogs')||'[]';if(window.FitFlowGo){const bytes=new TextEncoder().encode(json);let text='';for(const b of bytes)text+=String.fromCharCode(b);window.FitFlowGo.saveHistory(btoa(text));return}const blob=new Blob([json],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rehab-history.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}"
