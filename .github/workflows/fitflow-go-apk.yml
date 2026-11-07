@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'fitflow-go/**'
+      - 'index.html'
+      - 'assets/**'
       - '.github/workflows/fitflow-go-apk.yml'
 jobs:
   build:
