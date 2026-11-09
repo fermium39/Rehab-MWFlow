@@ -1,5 +1,5 @@
 // FitFlow offline shell and persistent image cache.
-const CACHE='rehab-mw-flow-fitflow-2026.11.09.01';
+const CACHE='rehab-mw-flow-fitflow-2026.11.09.02';
 const IMAGE_CACHE='fitflow-image-assets-v1';
 const OFFLINE='./index.html';
 const MAX_IMAGES=180;
